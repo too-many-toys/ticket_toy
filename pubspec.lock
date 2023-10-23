@@ -115,6 +115,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  scroll_loop_auto_scroll:
+    dependency: "direct main"
+    description:
+      name: scroll_loop_auto_scroll
+      sha256: "83645b380c58c9dac2a9948b11a6b09149a2aebd18a7ca25bbf3be3c89dbbbff"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -186,3 +194,4 @@ packages:
     version: "0.1.4-beta"
 sdks:
   dart: ">=3.1.4 <4.0.0"
+  flutter: ">=1.17.0"
