@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_loop_auto_scroll/scroll_loop_auto_scroll.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 void main() {
   runApp(const TOTDApp());
@@ -31,7 +32,9 @@ class TOTDHomePage extends StatefulWidget {
 }
 
 class _TOTDHomePageState extends State<TOTDHomePage> {
-  ScrollController controller = ScrollController();
+  TextEditingController movieTitleController = TextEditingController();
+  bool stepOne = false;
+  final movieList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +104,86 @@ class _TOTDHomePageState extends State<TOTDHomePage> {
             const Text('이 중 하나라도 해당된다면,'),
             ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('You clicked ElevatedButton.')));
+                  setState(() {
+                    stepOne = true;
+                  });
                 },
-                child: const Text('디지털 오리지널 티켓 만들기')),
+                child: const Text('디지털 오리지널 티켓 만들기 👇🏻')),
+            const SizedBox(height: 30),
+            stepOne
+                ? SizedBox(
+                    width: 500,
+                    height: 100,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'STEP 1 | 영화',
+                            style: TextStyle(
+                                color: Colors.lightBlue[800], fontSize: 20),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            TextButton(
+                                style: TextButton.styleFrom(
+                                    minimumSize: Size.zero,
+                                    padding: EdgeInsets.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap),
+                                onPressed: () => _dialogBuilder(context),
+                                child: const Text(
+                                  '영화 검색하기',
+                                  style: TextStyle(
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                )),
+                            const Text('영화를 선택해주세요')
+                          ],
+                        )
+                      ],
+                    ))
+                : Container()
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('영화 검색'),
+          shadowColor: ColorEffect.neutralValue,
+          content: TextField(
+              controller: movieTitleController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: '제목을 입력하세요',
+              )),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('검색'),
+              onPressed: () {
+                setState(() {
+                  movieList.add(movieTitleController.text);
+                });
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
