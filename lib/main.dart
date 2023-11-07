@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_loop_auto_scroll/scroll_loop_auto_scroll.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
+import 'package:ticket_toy/movie_controller.dart';
 
 void main() {
-  runApp(const TOTDApp());
+  runApp(const GetMaterialApp(
+    home: TOTDApp(),
+  ));
 }
 
 class TOTDApp extends StatelessWidget {
@@ -34,7 +38,8 @@ class TOTDHomePage extends StatefulWidget {
 class _TOTDHomePageState extends State<TOTDHomePage> {
   TextEditingController movieTitleController = TextEditingController();
   bool stepOne = false;
-  final movieList = [];
+  final MoviesController moviesController = Get.put(MoviesController());
+  final MoviesController c = Get.find();
 
   @override
   Widget build(BuildContext context) {
@@ -163,12 +168,57 @@ class _TOTDHomePageState extends State<TOTDHomePage> {
         return AlertDialog(
           title: const Text('영화 검색'),
           shadowColor: ColorEffect.neutralValue,
-          content: TextField(
-              controller: movieTitleController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '제목을 입력하세요',
-              )),
+          content: SizedBox(
+              width: 500,
+              height: 500,
+              child: Column(children: [
+                TextField(
+                    controller: movieTitleController,
+                    textInputAction: TextInputAction.go,
+                    onSubmitted: (value) async {
+                      moviesController.keyword.value =
+                          movieTitleController.text.toString();
+                      moviesController.fetchMovieList();
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: '제목을 입력하세요',
+                    )),
+                Obx(() => c.isDrawing.value
+                    ? SizedBox(
+                        width: 500,
+                        height: 400,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: c.movieList.value!.results.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return InkWell(
+                                  child: SizedBox(
+                                    child: Row(children: [
+                                      Image.network(
+                                        'https://image.tmdb.org/t/p/w500${c.movieList.value!.results[index].posterPath}',
+                                        scale: 5,
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(c.movieList.value!.results[index]
+                                              .title),
+                                          Text(
+                                              '개봉일 | ${c.movieList.value!.results[index].releaseDate}'),
+                                        ],
+                                      )
+                                    ]),
+                                  ),
+                                  onTap: () {
+                                    moviesController.selectedMovie.value =
+                                        c.movieList.value!.results[index];
+                                    Navigator.pop(context);
+                                  });
+                            }))
+                    : Container())
+              ])),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -176,9 +226,9 @@ class _TOTDHomePageState extends State<TOTDHomePage> {
               ),
               child: const Text('검색'),
               onPressed: () {
-                setState(() {
-                  movieList.add(movieTitleController.text);
-                });
+                moviesController.keyword.value =
+                    movieTitleController.text.toString();
+                moviesController.fetchMovieList();
               },
             ),
           ],
