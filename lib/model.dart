@@ -57,3 +57,49 @@ class MovieResults {
     );
   }
 }
+
+class Posters {
+  final int id;
+  final List<PostersResult> posters;
+
+  Posters({required this.id, required this.posters});
+
+  factory Posters.fromJson(Map<String, dynamic> json) {
+    List<PostersResult> posterList;
+    final data = json['posters'].map((i) => PostersResult.fromJson(i)).toList();
+    posterList = List<PostersResult>.from(data);
+
+    return Posters(
+      id: json['id'] as int,
+      posters: posterList,
+    );
+  }
+}
+
+class PostersResult {
+  final double aspectRatio;
+  final int height;
+  final String filePath;
+  final double voteAverage;
+  final int voteCount;
+  final int width;
+
+  PostersResult(
+      {required this.aspectRatio,
+      required this.height,
+      required this.filePath,
+      required this.voteAverage,
+      required this.voteCount,
+      required this.width});
+
+  factory PostersResult.fromJson(Map<String, dynamic> json) {
+    return PostersResult(
+      aspectRatio: json['aspect_ratio'] as double,
+      height: json['height'] as int,
+      filePath: json['file_path'] as String,
+      voteAverage: json['vote_average'] as double,
+      voteCount: json['vote_count'] as int,
+      width: json['width'] as int,
+    );
+  }
+}
