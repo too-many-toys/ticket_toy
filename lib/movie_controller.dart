@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ticket_toy/model.dart';
@@ -11,6 +13,7 @@ class MoviesController extends GetxController {
   final selectedMovie = Rxn<MovieResults>();
   final selectedPoster = Rxn<Image>();
   final keyword = ''.obs;
+  final capturedImage = Rxn<Uint8List>();
 
   final frame = const Image(
     image: AssetImage('assets/frame.png'),
@@ -18,10 +21,11 @@ class MoviesController extends GetxController {
 
   Future fetchMovies() async {
     final response = await http
-        .get(Uri.parse('${Config.API_URL}/movies?search=${keyword.value}'));
+        .get(Uri.parse('${Config.API_URL}/movie/list?search=${keyword.value}'));
 
     if (response.statusCode == 200) {
-      movieList.value = Movies.fromJson(jsonDecode(response.body));
+      movieList.value =
+          Movies.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
       update();
     } else {
       throw Exception('Failed to load movie list');
@@ -30,13 +34,14 @@ class MoviesController extends GetxController {
 
   Future fetchPosters() async {
     final response = await http.get(Uri.parse(
-        '${Config.API_URL}/posters?movie_id=${selectedMovie.value!.id}'));
+        '${Config.API_URL}/movie/posters?movie_id=${selectedMovie.value!.id}'));
 
     if (response.statusCode == 200) {
-      posterList.value = Posters.fromJson(jsonDecode(response.body));
+      posterList.value =
+          Posters.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
       update();
     } else {
-      throw Exception('Failed to load movie list');
+      throw Exception('Failed to load poster list');
     }
   }
 }

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:scroll_loop_auto_scroll/scroll_loop_auto_scroll.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:ticket_toy/movie_controller.dart';
 import 'package:ticket_toy/config.dart';
 import 'package:ticket_toy/poster.dart';
+import 'package:ticket_toy/s.dart';
 
 void main() {
+  KakaoSdk.init(javaScriptAppKey: '726e36b555c5df1c9ba09dbbb8340132');
   runApp(const TOTDApp());
 }
 
@@ -34,6 +38,10 @@ class TOTDHomePage extends StatelessWidget {
   final Step sc = Get.find();
   final PosterController posterController = Get.put(PosterController());
   final PosterController p = Get.find();
+  final S se = Get.put(S());
+  final S sse = Get.find();
+
+  ScreenshotController screenshotController = ScreenshotController();
 
   TOTDHomePage({super.key});
 
@@ -227,47 +235,33 @@ class TOTDHomePage extends StatelessWidget {
                           const Text("완성된 디지털 오리지널 티켓은 캡처하셔서"),
                           const Text("인스타그램, 블로그, 노션 등 원하는 곳에 사용하시면 됩니다."),
                           const Text(""),
-                          const Text("#TOTD도 함께 소개해주세요👏🏻"),
+                          const Text(
+                            "#TOTD도 함께 소개해주세요👏🏻",
+                            style: TextStyle(color: Colors.blueAccent),
+                          ),
                           const Text(""),
-                          const Text("**오리지널 티켓의 디자인 저작권은 메가박스에 있습니다."),
+                          const Text(
+                            "**오리지널 티켓의 디자인 저작권은 메가박스에 있습니다.",
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
                           const SizedBox(
                             height: 50,
                           ),
                           Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 300,
-                                      height: 600,
-                                      child: InteractiveViewer(
-                                        boundaryMargin:
-                                            const EdgeInsets.all(500.0),
-                                        minScale: 1,
-                                        maxScale: 5,
-                                        child: c.selectedPoster.value!,
-                                      ),
-                                    ),
-                                    IgnorePointer(
-                                      child: c.frame.value,
-                                    ),
-                                  ],
-                                ),
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SizedBox(
-                                        width: 300,
-                                        height: 600,
-                                        child: Obx(() => c
-                                                    .selectedPoster.value !=
-                                                null
-                                            ? Positioned(
-                                                left: p.x.value,
-                                                top: p.y.value,
+                              child: Screenshot(
+                                  controller: screenshotController,
+                                  child: SizedBox(
+                                    width: 500,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            SizedBox(
+                                                width: 250,
+                                                height: 500,
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
@@ -275,6 +269,30 @@ class TOTDHomePage extends StatelessWidget {
                                                               .selectedPoster
                                                               .value!
                                                               .image,
+                                                          fit: BoxFit
+                                                              .fitHeight)),
+                                                )),
+                                            IgnorePointer(
+                                                child: SizedBox(
+                                              width: 250,
+                                              child: c.frame.value,
+                                            )),
+                                          ],
+                                        ),
+                                        Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            SizedBox(
+                                                width: 250,
+                                                height: 500,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      image: DecorationImage(
+                                                          image: c
+                                                              .selectedPoster
+                                                              .value!
+                                                              .image,
+                                                          fit: BoxFit.fitHeight,
                                                           colorFilter:
                                                               ColorFilter.mode(
                                                             Colors.white
@@ -282,19 +300,32 @@ class TOTDHomePage extends StatelessWidget {
                                                                     0.5),
                                                             BlendMode.modulate,
                                                           ))),
-                                                ))
-                                            : Container())),
-                                    IgnorePointer(
-                                      child: c.frame.value,
+                                                )),
+                                            IgnorePointer(
+                                                child: SizedBox(
+                                              width: 250,
+                                              child: c.frame.value,
+                                            )),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
+                                  ))),
+                          ElevatedButton(
+                            onPressed: () async {
+                              var s = await screenshotController
+                                  .capture()
+                                  .catchError((e) {
+                                return null;
+                              });
+                              moviesController.capturedImage.value = s;
+                              await se.get();
+                            },
+                            child: const Text('이미지 캡처'),
+                          ),
                         ],
                       )
-                    : Container())
+                    : Container()),
               ],
             ),
           ),
@@ -429,6 +460,11 @@ class TOTDHomePage extends StatelessWidget {
   }
 }
 
+class Step extends GetxController {
+  final stepOne = false.obs;
+}
+
+
 // class SearchMovieRouter extends StatelessWidget {
 //   const SearchMovieRouter({super.key});
 
@@ -473,6 +509,11 @@ class TOTDHomePage extends StatelessWidget {
 //   }
 // }
 
-class Step extends GetxController {
-  final stepOne = false.obs;
-}
+// InteractiveViewer(
+//   boundaryMargin:
+//       const EdgeInsets.all(500.0),
+//   minScale: 1,
+//   maxScale: 5,
+//   child: c.selectedPoster.value!,
+// ),
+
