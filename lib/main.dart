@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:ticket_toy/movie_controller.dart';
 import 'package:ticket_toy/config.dart';
 import 'package:ticket_toy/poster.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ticket_toy/s.dart';
 
 void main() {
@@ -40,6 +41,9 @@ class TOTDHomePage extends StatelessWidget {
   final PosterController p = Get.find();
   final S se = Get.put(S());
   final S sse = Get.find();
+  final isWebMobile = kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android);
 
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -251,7 +255,7 @@ class TOTDHomePage extends StatelessWidget {
                               child: Screenshot(
                                   controller: screenshotController,
                                   child: SizedBox(
-                                    width: 500,
+                                    width: 300,
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -260,11 +264,17 @@ class TOTDHomePage extends StatelessWidget {
                                           alignment: Alignment.center,
                                           children: [
                                             SizedBox(
-                                                width: 250,
-                                                height: 500,
+                                                width: 150,
+                                                height: 300,
                                                 child: Container(
+                                                  width:
+                                                      isWebMobile ? 150 : 250,
+                                                  height: 300,
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
+                                                          filterQuality:
+                                                              FilterQuality
+                                                                  .high,
                                                           image: c
                                                               .selectedPoster
                                                               .value!
@@ -274,7 +284,8 @@ class TOTDHomePage extends StatelessWidget {
                                                 )),
                                             IgnorePointer(
                                                 child: SizedBox(
-                                              width: 250,
+                                              width: 150,
+                                              height: 300,
                                               child: c.frame.value,
                                             )),
                                           ],
@@ -283,11 +294,14 @@ class TOTDHomePage extends StatelessWidget {
                                           alignment: Alignment.center,
                                           children: [
                                             SizedBox(
-                                                width: 250,
-                                                height: 500,
+                                                width: 150,
+                                                height: 300,
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
+                                                          filterQuality:
+                                                              FilterQuality
+                                                                  .high,
                                                           image: c
                                                               .selectedPoster
                                                               .value!
@@ -298,12 +312,13 @@ class TOTDHomePage extends StatelessWidget {
                                                             Colors.white
                                                                 .withOpacity(
                                                                     0.5),
-                                                            BlendMode.modulate,
+                                                            BlendMode.dstATop,
                                                           ))),
                                                 )),
                                             IgnorePointer(
                                                 child: SizedBox(
-                                              width: 250,
+                                              width: 150,
+                                              height: 300,
                                               child: c.frame.value,
                                             )),
                                           ],
