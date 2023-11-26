@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:get/get.dart';
 import 'package:ticket_toy/home.dart';
+import 'package:ticket_toy/movie_controller.dart';
 import 'package:ticket_toy/my.dart';
+import 'package:ticket_toy/my_collection_cotroller.dart';
 import 'package:ticket_toy/post.dart';
+import 'package:ticket_toy/s.dart';
+import 'package:ticket_toy/config.dart';
 
-void main() {
-  KakaoSdk.init(javaScriptAppKey: '726e36b555c5df1c9ba09dbbb8340132');
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  variableInit();
+
+  final con = Get.put(S(), permanent: true);
+  Get.put(MoviesController(), permanent: true);
+  Get.put(MyCollectionController(), permanent: true);
+
+  await con.init();
+
   runApp(const TOTDApp());
 }
 
@@ -49,10 +61,7 @@ class TOTDHomePage extends GetView<LandingPageController> {
             children: [
               const Post(),
               HomePage(),
-              const My(),
-              // ExplorePage(),
-              // PlacesPage(),
-              // SettingsPage(),
+              My(),
             ],
           )),
     ));

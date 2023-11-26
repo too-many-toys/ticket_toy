@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,8 +6,15 @@ class Post extends GetView {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      child: Text('Post'),
+    return const Align(
+      alignment: Alignment.center,
+      child: Text(
+        'COMMING SOON',
+        style: TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

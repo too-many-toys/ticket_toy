@@ -1,46 +1,65 @@
-import 'package:flutter/services.dart';
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:ticket_toy/config.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 class S extends GetxController {
-  final storage = const FlutterSecureStorage();
-  late String s;
+  late final SharedPreferences storage;
+  final token = ''.obs;
 
-  Future get() async {
-    if (await storage.read(key: "token") == null) {
-      if (await isKakaoTalkInstalled()) {
-        try {
-          await UserApi.instance.loginWithKakaoTalk();
-        } catch (error) {
-          // 사용자가 카카오톡 설치 후 디바이스 권한 요청 화면에서 로그인을 취소한 경우,
-          // 의도적인 로그인 취소로 보고 카카오계정으로 로그인 시도 없이 로그인 취소로 처리 (예: 뒤로 가기)
-          if (error is PlatformException && error.code == 'CANCELED') {
-            return;
-          }
-          // 카카오톡에 연결된 카카오계정이 없는 경우, 카카오계정으로 로그인
-          await UserApi.instance.loginWithKakaoAccount();
-        }
-      } else {
-        await UserApi.instance.loginWithKakaoAccount();
-      }
-      User user = await UserApi.instance.me();
-      final response = await http.post(
-          Uri.parse('${Config.API_URL}/user/signin'),
-          body: {"uid": user.id.toString(), "account_type": "Kakao"});
-      if (response.statusCode == 200) {
-        s = SS.fromJson(jsonDecode(utf8.decode(response.bodyBytes))).s;
-        update();
-      } else {
-        throw Exception('Failed to load jwt');
-      }
-      await storage.write(key: "token", value: s);
-    } else {
-      s = await storage.read(key: "token") as String;
+  Future init() async {
+    storage = await SharedPreferences.getInstance();
+    if (storage.getString("token") != null) {
+      token.value = storage.getString("token") as String;
     }
+  }
+
+  Future getToken() async {
+    final url = Uri.https('kauth.kakao.com', '/oauth/authorize', {
+      'client_id': '726e36b555c5df1c9ba09dbbb8340132',
+      'redirect_uri': redirectUrl,
+      'response_type': 'code',
+    });
+    final result = await FlutterWebAuth2.authenticate(
+        url: url.toString(), callbackUrlScheme: "webauthcallback");
+
+    final code = Uri.parse(result).queryParameters['code'] as String;
+    final accessTokenUri = Uri.https('kauth.kakao.com', '/oauth/token', {
+      'grant_type': 'authorization_code',
+      'client_id': '726e36b555c5df1c9ba09dbbb8340132',
+      'redirect_uri': redirectUrl,
+      'code': code,
+    });
+    final accessTokenResult = await http.post(accessTokenUri);
+    final accessToken = json.decode(accessTokenResult.body)['access_token'];
+
+    final tokenUrl = Uri.https('kapi.kakao.com', '/v2/user/me');
+    final tokenResponse = await http.post(tokenUrl, headers: {
+      'Authorization': 'Bearer $accessToken',
+      'Content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+    });
+
+    Uri? signinUrl;
+    if (kDebugMode) {
+      signinUrl = Uri.http('localhost:3000', 'user/signin');
+    } else {
+      signinUrl = Uri.https('totd.xyz', 'api/user/signin');
+    }
+    final userInfo = json.decode(tokenResponse.body);
+    final tokenResult = await http.post(signinUrl,
+        body: json.encode({
+          "uid": userInfo['id'].toString(),
+          "account_type": "Kakao",
+        }),
+        headers: {'Content-type': 'application/json'});
+
+    token.value = json.decode(tokenResult.body)['token'];
+    await storage.setString("token", token.value);
   }
 }
 

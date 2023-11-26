@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:scroll_loop_auto_scroll/scroll_loop_auto_scroll.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:ticket_toy/movie_controller.dart';
-import 'package:ticket_toy/poster.dart';
 import 'package:ticket_toy/s.dart';
-import 'package:ticket_toy/config.dart';
+import 'package:ticket_toy/search_movie.dart';
+import 'package:ticket_toy/search_poster.dart';
+import 'package:ticket_toy/send_collection.dart';
+import 'package:ticket_toy/ticket_painter.dart';
 
 class HomePage extends GetView {
   HomePage({super.key});
@@ -16,18 +17,11 @@ class HomePage extends GetView {
       (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.android);
 
-  final ScreenshotController screenshotController = ScreenshotController();
-
   final TextEditingController movieTitleController = TextEditingController();
-  final MoviesController moviesController = Get.put(MoviesController());
-  final MoviesController c = Get.find();
+  final MoviesController movieController = Get.find();
 
-  final PosterController posterController = Get.put(PosterController());
-  final PosterController p = Get.find();
-  final S se = Get.put(S());
-  final S sse = Get.find();
+  final S sController = Get.find();
   final Step step = Get.put(Step());
-  final Step sc = Get.find();
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +104,7 @@ class HomePage extends GetView {
                 child: const Text('디지털 오리지널 티켓 만들기 👇🏻')),
             const SizedBox(height: 30),
             Obx(
-              () => sc.stepOne.value
+              () => step.stepOne.value
                   ? SizedBox(
                       width: 300,
                       height: 100,
@@ -137,16 +131,18 @@ class HomePage extends GetView {
                                       padding: EdgeInsets.zero,
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap),
-                                  onPressed: () => _searchMovies(context),
+                                  onPressed: () => Get.to(SearchMovie()),
                                   child: const Text(
                                     '영화 검색하기',
                                     style: TextStyle(
                                       decoration: TextDecoration.underline,
                                     ),
                                   )),
-                              Obx(() => c.selectedMovie.value != null
-                                  ? Text(c.selectedMovie.value!.title)
-                                  : const Text('영화를 선택해주세요')),
+                              Obx(() =>
+                                  movieController.selectedMovie.value != null
+                                      ? Text(movieController
+                                          .selectedMovie.value!.title)
+                                      : const Text('영화를 선택해주세요')),
                             ],
                           )
                         ],
@@ -154,7 +150,7 @@ class HomePage extends GetView {
                   : Container(),
             ),
             Obx(
-              () => c.selectedMovie.value != null
+              () => movieController.selectedMovie.value != null
                   ? SizedBox(
                       width: 300,
                       height: 100,
@@ -182,8 +178,8 @@ class HomePage extends GetView {
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap),
                                   onPressed: () => {
-                                        moviesController.fetchPosters(),
-                                        _getPosters(context)
+                                        movieController.fetchPosters(),
+                                        Get.to(SearchPoster())
                                       },
                                   child: const Text(
                                     '포스터 선택하기',
@@ -192,9 +188,10 @@ class HomePage extends GetView {
                                     ),
                                   )),
                               Obx(
-                                () => c.selectedPoster.value != null
-                                    ? const Text("포스터 선택 완료!")
-                                    : const Text('포스터를 선택해주세요'),
+                                () =>
+                                    movieController.selectedPoster.value != null
+                                        ? const Text("포스터 선택 완료!")
+                                        : const Text('포스터를 선택해주세요'),
                               )
                             ],
                           )
@@ -202,7 +199,7 @@ class HomePage extends GetView {
                       ))
                   : Container(),
             ),
-            Obx(() => c.selectedPoster.value != null
+            Obx(() => movieController.selectedPoster.value != null
                 ? Column(
                     children: [
                       const Text("완성 | 아래로 스크롤해 결과물을 확인하세요!"),
@@ -224,7 +221,7 @@ class HomePage extends GetView {
                       ),
                       Center(
                           child: Screenshot(
-                              controller: screenshotController,
+                              controller: movieController.screenshotController,
                               child: SizedBox(
                                 width: 400,
                                 child: Row(
@@ -242,16 +239,16 @@ class HomePage extends GetView {
                                                   image: DecorationImage(
                                                       filterQuality:
                                                           FilterQuality.high,
-                                                      image: c.selectedPoster
-                                                          .value!.image,
+                                                      image: movieController
+                                                          .selectedPoster
+                                                          .value!,
                                                       fit: BoxFit.fitHeight)),
                                             )),
-                                        IgnorePointer(
-                                            child: SizedBox(
+                                        SizedBox(
                                           width: 200,
                                           height: 400,
-                                          child: c.frame.value,
-                                        )),
+                                          child: movieController.frame.value,
+                                        ),
                                       ],
                                     ),
                                     Stack(
@@ -265,22 +262,43 @@ class HomePage extends GetView {
                                                   image: DecorationImage(
                                                       filterQuality:
                                                           FilterQuality.high,
-                                                      image: c.selectedPoster
-                                                          .value!.image,
+                                                      image: movieController
+                                                          .selectedPoster
+                                                          .value!,
                                                       fit: BoxFit.fitHeight,
                                                       colorFilter:
                                                           ColorFilter.mode(
-                                                        Colors.white
-                                                            .withOpacity(0.5),
-                                                        BlendMode.dstATop,
+                                                        movieController
+                                                            .selectedColor
+                                                            .value!
+                                                            .darkVibrantColor!
+                                                            .color
+                                                            .withOpacity(0.8),
+                                                        BlendMode.darken,
                                                       ))),
                                             )),
-                                        IgnorePointer(
-                                            child: SizedBox(
+                                        SizedBox(
                                           width: 200,
                                           height: 400,
-                                          child: c.frame.value,
-                                        )),
+                                          child: movieController.frame.value,
+                                        ),
+                                        SizedBox(
+                                            width: 200,
+                                            height: 400,
+                                            child: Align(
+                                              alignment:
+                                                  const Alignment(-1.0, -1.0),
+                                              child: Obx(
+                                                () => movieController
+                                                            .credits.value !=
+                                                        null
+                                                    ? CustomPaint(
+                                                        painter:
+                                                            TicketPainter(),
+                                                      )
+                                                    : Container(),
+                                              ),
+                                            ))
                                       ],
                                     ),
                                   ],
@@ -288,149 +306,28 @@ class HomePage extends GetView {
                               ))),
                       ElevatedButton(
                         onPressed: () async {
-                          var s = await screenshotController
+                          var s = await movieController.screenshotController
                               .capture()
                               .catchError((e) {
                             return null;
                           });
-                          moviesController.capturedImage.value = s;
-                          await se.get();
+                          movieController.capturedImage.value = s;
+
+                          Get.dialog(SendCollection()).then((value) =>
+                              movieController.isCollectionUploaded.value =
+                                  false);
                         },
-                        child: const Text('이미지 캡처'),
+                        child: const Text('감상 저장하기'),
                       ),
+                      const SizedBox(
+                        height: 80,
+                      )
                     ],
                   )
                 : Container()),
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> _searchMovies(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Center(
-            child: Text('영화 검색'),
-          ),
-          shadowColor: ColorEffect.neutralValue,
-          content: SizedBox(
-              width: 500,
-              height: 600,
-              child: Column(children: [
-                TextField(
-                    controller: movieTitleController,
-                    textInputAction: TextInputAction.go,
-                    onSubmitted: (value) async {
-                      moviesController.keyword.value =
-                          movieTitleController.text.toString();
-                      moviesController.fetchMovies();
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: '제목을 입력하세요',
-                    )),
-                Obx(() => c.movieList.value != null
-                    ? SizedBox(
-                        width: 500,
-                        height: 500,
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: c.movieList.value!.results.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return InkWell(
-                                  child: SizedBox(
-                                    child: Row(children: [
-                                      Image.network(
-                                        '${Config.IMAGE_URL}/${c.movieList.value!.results[index].posterPath}',
-                                        scale: 5,
-                                      ),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(c.movieList.value!.results[index]
-                                              .title),
-                                          Text(
-                                              '개봉일 | ${c.movieList.value!.results[index].releaseDate}'),
-                                        ],
-                                      )
-                                    ]),
-                                  ),
-                                  onTap: () {
-                                    moviesController.selectedMovie.value =
-                                        c.movieList.value!.results[index];
-                                    Navigator.pop(context);
-                                  });
-                            }))
-                    : Container())
-              ])),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('검색'),
-              onPressed: () {
-                moviesController.keyword.value =
-                    movieTitleController.text.toString();
-                moviesController.fetchMovies();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _getPosters(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Center(
-            child: Text('포스터 선택'),
-          ),
-          shadowColor: ColorEffect.neutralValue,
-          content: SizedBox(
-              width: 500,
-              height: 600,
-              child: Column(children: [
-                Obx(() => c.posterList.value != null
-                    ? SizedBox(
-                        width: 500,
-                        height: 500,
-                        child: GridView(
-                          shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                          ),
-                          children: List.generate(
-                              c.movieList.value!.results.length, (index) {
-                            return InkWell(
-                                child: Image.network(
-                                  '${Config.IMAGE_URL}/${c.posterList.value!.posters[index].filePath}',
-                                  scale: 5,
-                                ),
-                                onTap: () {
-                                  moviesController.selectedPoster.value =
-                                      Image.network(
-                                    '${Config.IMAGE_URL}/${c.posterList.value!.posters[index].filePath}',
-                                    scale: 4,
-                                  );
-                                  Navigator.pop(context);
-                                });
-                          }),
-                        ))
-                    : Container())
-              ])),
-        );
-      },
     );
   }
 }
