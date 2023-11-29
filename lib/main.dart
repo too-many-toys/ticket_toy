@@ -59,7 +59,6 @@ class TOTDHomePage extends GetView<LandingPageController> {
       body: Obx(() => IndexedStack(
             index: landingPageController.tabIndex.value,
             children: [
-              const Post(),
               HomePage(),
               My(),
             ],
@@ -83,17 +82,6 @@ class TOTDHomePage extends GetView<LandingPageController> {
             unselectedLabelStyle: unselectedLabelStyle,
             selectedLabelStyle: selectedLabelStyle,
             items: [
-              BottomNavigationBarItem(
-                icon: Container(
-                  margin: const EdgeInsets.only(bottom: 7),
-                  child: const Icon(
-                    Icons.explore,
-                    size: 20.0,
-                  ),
-                ),
-                label: 'Posts',
-                backgroundColor: const Color.fromRGBO(36, 54, 101, 1.0),
-              ),
               BottomNavigationBarItem(
                 icon: Container(
                   margin: const EdgeInsets.only(bottom: 7),
@@ -123,65 +111,9 @@ class TOTDHomePage extends GetView<LandingPageController> {
 }
 
 class LandingPageController extends GetxController {
-  var tabIndex = 1.obs;
+  var tabIndex = 0.obs;
 
   void changeTabIndex(int index) {
     tabIndex.value = index;
   }
 }
-
-
-
-
-// class SearchMovieRouter extends StatelessWidget {
-//   const SearchMovieRouter({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Center(
-//           child: SearchAnchor(
-//               builder: (BuildContext context, SearchController controller) {
-//             return SearchBar(
-//               shadowColor:
-//                   MaterialStateProperty.all<Color>(Colors.deepOrangeAccent),
-//               controller: controller,
-//               padding: const MaterialStatePropertyAll<EdgeInsets>(
-//                   EdgeInsets.symmetric(horizontal: 16.0)),
-//               onTap: () {
-//                 controller.openView();
-//               },
-//               onChanged: (_) {
-//                 controller.openView();
-//               },
-//               leading: const Icon(Icons.search),
-//               trailing: <Widget>[
-//                 Tooltip(
-//                   message: 'Change brightness mode',
-//                   child: IconButton(
-//                     onPressed: () {},
-//                     icon: const Icon(Icons.wb_sunny_outlined),
-//                     selectedIcon: const Icon(Icons.brightness_2_outlined),
-//                   ),
-//                 )
-//               ],
-//             );
-//           }, suggestionsBuilder:
-//                   (BuildContext context, SearchController controller) {
-//             return [const Text("")];
-//           }),
-//         )
-//       ],
-//     );
-//   }
-// }
-
-// InteractiveViewer(
-//   boundaryMargin:
-//       const EdgeInsets.all(500.0),
-//   minScale: 1,
-//   maxScale: 5,
-//   child: c.selectedPoster.value!,
-// ),
-
